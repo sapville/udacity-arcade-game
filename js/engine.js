@@ -175,7 +175,8 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
     'images/water-block.png',
     'images/grass-block.png',
     'images/enemy-bug.png',
-    'images/char-boy.png'
+    'images/char-boy.png',
+    'images/char-cat-girl.png'
   ]);
   window.Resources.onReady(init);
 

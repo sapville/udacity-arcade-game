@@ -4,7 +4,7 @@ class Enemy {
     this.sprite = 'images/enemy-bug.png';
     this.lane = lane;
     this.x = 1;
-    this.y = this.getYCoord();
+    this.y = App.getYCoord(this.lane);
     this.speed = speed; //px per second
   }
   // Update the enemy's position, required method for game
@@ -18,30 +18,46 @@ class Enemy {
       this.speed = App.getRandomIntInclusive(...App.getSpeedRange()); //speed
       this.lane = App.getRandomIntInclusive(1, 3); //lane
       this.x = 1;
-      this.y = this.getYCoord();
+      this.y = App.getYCoord(this.lane);
     }
   }
   // Draw the enemy on the screen, required method for game
   render() {
     window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
   }
-  getYCoord() {
-    return this.lane * 83 - 22;
-  }
 }
 
 class Player {
   constructor() {
-
+    this.sprite = 'images/char-cat-girl.png';
+    this.lane = 4;
+    this.mile = App.getRandomIntInclusive(0, 4);
+    this.x = App.getXCoord(this.mile);
+    this.y = App.getYCoord(this.lane);
   }
-  update(dt) {
-
+  update() {
+    this.x = App.getXCoord(this.mile);
+    this.y = App.getYCoord(this.lane);
+    // console.log(this.mile, this.lane);
   }
   render() {
-
+    window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
   }
   handleInput(keyPressed) {
-
+    switch (keyPressed) {
+      case 'left':
+        this.mile = this.mile === 0 ? 0 : this.mile - 1;
+        break;
+      case 'right':
+        this.mile = this.mile === 4 ? 4 : this.mile + 1;
+        break;
+      case 'up':
+        this.lane = this.lane === 0 ? 0 : this.lane - 1;
+        break;
+      case 'down':
+        this.lane = this.lane === 5 ? 5 : this.lane + 1;
+        break;
+    }
   }
 }
 
@@ -77,6 +93,13 @@ class App {
   static getSpeedRange() {
     return [100, 400];
   }
+  static getYCoord(lane) {
+    return lane * 83 - 22;
+  }
+  static getXCoord(mile) {
+    return mile * 101;
+  }
+
 }
 
 const app = new App(); //eslint-disable-line no-unused-vars
