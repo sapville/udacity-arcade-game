@@ -1,13 +1,22 @@
 /*globals
   Constants
  */
+class Entity {
+  constructor(sprite, x, y) {
+    this.sprite = sprite;
+    this.x = x;
+    this.y = y;
+  }
+  render() {
+    window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
+  }
+}
+
 // Enemies our player must avoid
-class Enemy {
+class Enemy extends Entity{
   constructor(speed, lane) {
-    this.sprite = 'images/enemy-bug.png';
+    super('images/enemy-bug.png', 1, App.getYCoord(lane));
     this.lane = lane;
-    this.x = 1;
-    this.y = App.getYCoord(this.lane);
     this.speed = speed; //px per second
     this.width = 50;
   }
@@ -26,27 +35,19 @@ class Enemy {
     }
     app.collisionCheck(this, this.lane, this.x + this.width); //adjust coordinates to the widht of the enemy
   }
-  // Draw the enemy on the screen, required method for game
-  render() {
-    window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
-  }
 }
 
-class Player {
+class Player extends Entity{
   constructor(mile) {
+    super('images/char-cat-girl.png', App.getXCoord(mile), App.getYCoord(4));
     this.sprite = 'images/char-cat-girl.png';
     this.lane = 4;
     this.mile = mile;
-    this.x = App.getXCoord(this.mile);
-    this.y = App.getYCoord(this.lane);
   }
   update() {
     this.x = App.getXCoord(this.mile);
     this.y = App.getYCoord(this.lane);
     app.collisionCheck(this);
-  }
-  render() {
-    window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
   }
   handleInput(keyPressed) {
     switch (keyPressed) {
@@ -108,7 +109,21 @@ class App {
     }
   }
   getMile(x) {
-    return Math.floor( x / Constants.tileSize.width);
+    return Math.floor(x / Constants.tileSize.width);
+  }
+  triumph() {
+    const lanes = new Set([0, 1, 2, 3, 4]);
+    let lane = null;
+    this.triumph = true;
+    for (let i = 0; i < 5; i++) {
+      while (!lanes.has(lane) && lanes.size > 0) { //find a random lane of those which haven't been occupied
+        lane = this.getRandomIntInclusive(0, 4);
+      }
+      setTimeout(() => { //
+        this.stars.push(new Star(lane));
+      }, 1000 * i);
+      lanes.delete(lane);
+    }
   }
   static getRandomIntInclusive(min, max) {
     //the algorithm is taken from the article on Math.random() on developer.mozilla.org
