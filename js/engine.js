@@ -1,6 +1,7 @@
-/*global
+/*globals
+Constants
 app
- */
+*/
 /* Engine.js
  * This file provides the game loop functionality (update entities and render),
  * draws the initial game board on the screen, and then calls the update and
@@ -27,8 +28,8 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
     ctx = canvas.getContext('2d'),
     lastTime;
 
-  canvas.width = 505;
-  canvas.height = 606;
+  canvas.width = Constants.canvasSize.width;
+  canvas.height = Constants.canvasSize.height;
   doc.body.appendChild(canvas);
 
   /* This function serves as the kickoff point for the game loop itself
@@ -136,7 +137,10 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
          * so that we get the benefits of caching these images, since
          * we're using them over and over.
          */
-        ctx.drawImage(window.Resources.get(rowImages[row]), col * 101, row * 83);
+        ctx.drawImage(
+          window.Resources.get(rowImages[row]),
+          col * Constants.tileSize.width,
+          row * Constants.tileSize.height);
       }
     }
 

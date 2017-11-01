@@ -1,3 +1,6 @@
+/*globals
+  Constants
+ */
 // Enemies our player must avoid
 class Enemy {
   constructor(speed, lane) {
@@ -6,6 +9,7 @@ class Enemy {
     this.x = 1;
     this.y = App.getYCoord(this.lane);
     this.speed = speed; //px per second
+    this.width = 50;
   }
   // Update the enemy's position, required method for game
   // Parameter: dt, a time delta between ticks
@@ -14,12 +18,13 @@ class Enemy {
     // which will ensure the game runs at the same speed for
     // all computers.
     this.x = (this.x + this.speed * dt);
-    if (this.x === 0 || this.x > 505) {
+    if (this.x === 0 || this.x > Constants.canvasSize.width) {
       this.speed = App.getRandomIntInclusive(...App.getSpeedRange()); //speed
       this.lane = App.getRandomIntInclusive(1, 3); //lane
       this.x = 1;
       this.y = App.getYCoord(this.lane);
     }
+    app.collisionCheck(this, this.lane, this.x + this.width); //adjust coordinates to the widht of the enemy
   }
   // Draw the enemy on the screen, required method for game
   render() {
@@ -28,17 +33,17 @@ class Enemy {
 }
 
 class Player {
-  constructor() {
+  constructor(mile) {
     this.sprite = 'images/char-cat-girl.png';
     this.lane = 4;
-    this.mile = App.getRandomIntInclusive(0, 4);
+    this.mile = mile;
     this.x = App.getXCoord(this.mile);
     this.y = App.getYCoord(this.lane);
   }
   update() {
     this.x = App.getXCoord(this.mile);
     this.y = App.getYCoord(this.lane);
-    // console.log(this.mile, this.lane);
+    app.collisionCheck(this);
   }
   render() {
     window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
@@ -64,9 +69,10 @@ class Player {
 class App {
   constructor() {
     this.stopRendering = false;
-    this.player = new Player();
+    this.player = new Player(App.getRandomIntInclusive(0, 4));
     this.allEnemies = [];
     this.enemyNumber = 3;
+    this.bang = false;
     for (var i = 0; i < this.enemyNumber; i++) {
       this.allEnemies.push(new Enemy(
         App.getRandomIntInclusive(...App.getSpeedRange()), //speed
@@ -85,6 +91,25 @@ class App {
   isStopRendering() {
     return this.stopRendering;
   }
+  collisionCheck(caller, lane, x) {
+    if (caller instanceof Enemy) {
+      if (lane === this.player.lane && this.getMile(x) === this.player.mile) {
+        this.bang = true;
+      }
+      return this.bang;
+    } else if (caller instanceof Player) {
+      if (this.bang) {
+        this.bang = false;
+        this.player.lane = 4;
+        return true;
+      }
+    } else {
+      return;
+    }
+  }
+  getMile(x) {
+    return Math.floor( x / Constants.tileSize.width);
+  }
   static getRandomIntInclusive(min, max) {
     //the algorithm is taken from the article on Math.random() on developer.mozilla.org
     const rand = Math.random();
@@ -94,10 +119,10 @@ class App {
     return [100, 400];
   }
   static getYCoord(lane) {
-    return lane * 83 - 22;
+    return lane * Constants.tileSize.height - 22;
   }
   static getXCoord(mile) {
-    return mile * 101;
+    return mile * Constants.tileSize.width;
   }
 
 }
