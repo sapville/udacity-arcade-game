@@ -13,7 +13,7 @@ class Entity {
 }
 
 // Enemies our player must avoid
-class Enemy extends Entity{
+class Enemy extends Entity {
   constructor(speed, lane) {
     super('images/enemy-bug.png', 1, App.getYCoord(lane));
     this.lane = lane;
@@ -26,7 +26,10 @@ class Enemy extends Entity{
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    this.x = (this.x + this.speed * dt);
+    if (app.isParading) {
+      return;
+    }
+    this.x = this.x + this.speed * dt;
     if (this.x === 0 || this.x > Constants.canvasSize.width) {
       this.speed = App.getRandomIntInclusive(...App.getSpeedRange()); //speed
       this.lane = App.getRandomIntInclusive(1, 3); //lane
@@ -37,7 +40,7 @@ class Enemy extends Entity{
   }
 }
 
-class Player extends Entity{
+class Player extends Entity {
   constructor(mile) {
     super('images/char-cat-girl.png', App.getXCoord(mile), App.getYCoord(4));
     this.sprite = 'images/char-cat-girl.png';
@@ -45,9 +48,16 @@ class Player extends Entity{
     this.mile = mile;
   }
   update() {
+    if (app.isParading) {
+      return;
+    }
     this.x = App.getXCoord(this.mile);
     this.y = App.getYCoord(this.lane);
-    app.collisionCheck(this);
+    if (this.lane === 0) {
+      app.parade();
+    } else {
+      app.collisionCheck(this);
+    }
   }
   handleInput(keyPressed) {
     switch (keyPressed) {
@@ -70,8 +80,10 @@ class Player extends Entity{
 class App {
   constructor() {
     this.stopRendering = false;
+    this.isParading = false;
     this.player = new Player(App.getRandomIntInclusive(0, 4));
     this.allEnemies = [];
+    this.stars = [];
     this.enemyNumber = 3;
     this.bang = false;
     for (var i = 0; i < this.enemyNumber; i++) {
@@ -82,6 +94,9 @@ class App {
     document.getElementById('btn-stop').addEventListener('click', () => {
       this.stopRendering = true;
     });
+  }
+  getStars() {
+    return this.stars;
   }
   getEnemies() {
     return this.allEnemies;
@@ -103,6 +118,8 @@ class App {
         this.bang = false;
         this.player.lane = 4;
         return true;
+      } else {
+        return false;
       }
     } else {
       return;
@@ -111,17 +128,17 @@ class App {
   getMile(x) {
     return Math.floor(x / Constants.tileSize.width);
   }
-  triumph() {
+  parade() {
     const lanes = new Set([0, 1, 2, 3, 4]);
     let lane = null;
-    this.triumph = true;
+    this.isParading = true;
     for (let i = 0; i < 5; i++) {
       while (!lanes.has(lane) && lanes.size > 0) { //find a random lane of those which haven't been occupied
-        lane = this.getRandomIntInclusive(0, 4);
+        lane = App.getRandomIntInclusive(0, 4);
       }
-      setTimeout(() => { //
+      window.setTimeout( (lane) => { //
         this.stars.push(new Star(lane));
-      }, 1000 * i);
+      }, 1000 * i, lane);
       lanes.delete(lane);
     }
   }
@@ -141,6 +158,20 @@ class App {
   }
 
 }
+
+class Star extends Entity {
+  constructor(lane) {
+    super('images/Star.png', App.getXCoord(lane), 1);
+    this.speed = 100;
+  }
+  update(dt) {
+    this.y = this.y + this.speed * dt;
+    if (this.y > Constants.canvasSize.height - 170) {
+      this.y = 1;
+    }
+  }
+}
+
 
 const app = new App(); //eslint-disable-line no-unused-vars
 

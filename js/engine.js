@@ -99,6 +99,7 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
     app.getEnemies().forEach(function(enemy) {
       enemy.update(dt);
     });
+    app.getStars().forEach( (star) => {star.update(dt);} );
     app.getPlayer().update();
   }
 
@@ -158,7 +159,7 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
     app.getEnemies().forEach(function(enemy) {
       enemy.render();
     });
-
+    app.getStars().forEach( (star) => {star.render();});
     app.getPlayer().render();
   }
 
@@ -180,7 +181,8 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
     'images/grass-block.png',
     'images/enemy-bug.png',
     'images/char-boy.png',
-    'images/char-cat-girl.png'
+    'images/char-cat-girl.png',
+    'images/Star.png'
   ]);
   window.Resources.onReady(init);
 
