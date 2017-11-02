@@ -17,16 +17,16 @@ app
  * writing app.js a little simpler to work with.
  */
 
-var Engine = (function(global) { //eslint-disable-line no-unused-vars
+const Engine = (function(global) { //eslint-disable-line no-unused-vars
   /* Predefine the variables we'll be using within this scope,
    * create the canvas element, grab the 2D context for that canvas
    * set the canvas elements height/width and add it to the DOM.
    */
-  var doc = global.document,
+  const doc = global.document,
     win = global.window,
     canvas = doc.createElement('canvas'),
-    ctx = canvas.getContext('2d'),
-    lastTime;
+    ctx = canvas.getContext('2d');
+  let  lastTime;
 
   canvas.width = Constants.canvasSize.width;
   canvas.height = Constants.canvasSize.height;
@@ -42,7 +42,7 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
      * would be the same for everyone (regardless of how fast their
      * computer is) - hurray time!
      */
-    var now = Date.now(),
+    const now = Date.now(),
       dt = (now - lastTime) / 1000.0;
 
     /* Call our update/render functions, pass along the time delta to
@@ -113,7 +113,7 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
     /* This array holds the relative URL to the image used
      * for that particular row of the game level.
      */
-    var rowImages = [
+    const rowImages = [
         'images/water-block.png', // Top row is water
         'images/stone-block.png', // Row 1 of 3 of stone
         'images/stone-block.png', // Row 2 of 3 of stone
@@ -122,8 +122,8 @@ var Engine = (function(global) { //eslint-disable-line no-unused-vars
         'images/grass-block.png' // Row 2 of 2 of grass
       ],
       numRows = 6,
-      numCols = 5,
-      row, col;
+      numCols = 5;
+      let row, col;
 
     /* Loop through the number of rows and columns we've defined above
      * and, using the rowImages array, draw the correct image for that

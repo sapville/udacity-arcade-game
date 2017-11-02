@@ -7,6 +7,7 @@ class Entity {
     this.x = x;
     this.y = y;
   }
+
   render() {
     window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
   }
@@ -20,6 +21,7 @@ class Enemy extends Entity {
     this.speed = speed; //px per second
     this.width = 50;
   }
+
   // Update the enemy's position, required method for game
   // Parameter: dt, a time delta between ticks
   update(dt) {
@@ -36,7 +38,7 @@ class Enemy extends Entity {
       this.x = 1;
       this.y = App.getYCoord(this.lane);
     }
-    app.collisionCheck(this, this.lane, this.x + this.width); //adjust coordinates to the widht of the enemy
+    app.collisionCheck(this, this.lane, this.x + this.width); //adjust coordinates to the width of the enemy
   }
 }
 
@@ -47,6 +49,7 @@ class Player extends Entity {
     this.lane = 4;
     this.mile = mile;
   }
+
   update() {
     if (app.isParading) {
       return;
@@ -59,6 +62,7 @@ class Player extends Entity {
       app.collisionCheck(this);
     }
   }
+
   handleInput(keyPressed) {
     switch (keyPressed) {
       case 'left':
@@ -86,7 +90,7 @@ class App {
     this.stars = [];
     this.enemyNumber = 3;
     this.bang = false;
-    for (var i = 0; i < this.enemyNumber; i++) {
+    for (let i = 0; i < this.enemyNumber; i++) {
       this.allEnemies.push(new Enemy(
         App.getRandomIntInclusive(...App.getSpeedRange()), //speed
         App.getRandomIntInclusive(1, 3))); //lane
@@ -95,25 +99,31 @@ class App {
       this.stopRendering = true;
     });
   }
+
   getStars() {
     return this.stars;
   }
+
   getEnemies() {
     return this.allEnemies;
   }
+
   getPlayer() {
     return this.player;
   }
+
   isStopRendering() {
     return this.stopRendering;
   }
+
   collisionCheck(caller, lane, x) {
     if (caller instanceof Enemy) {
-      if (lane === this.player.lane && this.getMile(x) === this.player.mile) {
+      if (lane === this.player.lane && App.getMile(x) === this.player.mile) {
         this.bang = true;
       }
       return this.bang;
-    } else if (caller instanceof Player) {
+    }
+    if (caller instanceof Player) {
       if (this.bang) {
         this.bang = false;
         this.player.lane = 4;
@@ -121,38 +131,45 @@ class App {
       } else {
         return false;
       }
-    } else {
-      return;
     }
   }
-  getMile(x) {
+
+  parade() {
+    let i = 0;
+    this.isParading = true;
+    App.getUniqueRandoms(0, 4, 5).forEach((lane) => {
+      console.log(i);
+      window.setTimeout(() => { //
+        this.stars.push(new Star(lane));
+      }, 1000 * i++);
+    });
+  }
+
+  static getUniqueRandoms(min, max, size) {
+    const randoms = new Set();
+    while (randoms.size < size) randoms.add(App.getRandomIntInclusive(min, max));
+    return randoms;
+
+  }
+
+  static getMile(x) {
     return Math.floor(x / Constants.tileSize.width);
   }
-  parade() {
-    const lanes = new Set([0, 1, 2, 3, 4]);
-    let lane = null;
-    this.isParading = true;
-    for (let i = 0; i < 5; i++) {
-      while (!lanes.has(lane) && lanes.size > 0) { //find a random lane of those which haven't been occupied
-        lane = App.getRandomIntInclusive(0, 4);
-      }
-      window.setTimeout( (lane) => { //
-        this.stars.push(new Star(lane));
-      }, 1000 * i, lane);
-      lanes.delete(lane);
-    }
-  }
+
   static getRandomIntInclusive(min, max) {
     //the algorithm is taken from the article on Math.random() on developer.mozilla.org
     const rand = Math.random();
     return Math.floor(rand * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
   }
+
   static getSpeedRange() {
     return [100, 400];
   }
+
   static getYCoord(lane) {
     return lane * Constants.tileSize.height - 22;
   }
+
   static getXCoord(mile) {
     return mile * Constants.tileSize.width;
   }
@@ -164,6 +181,7 @@ class Star extends Entity {
     super('images/Star.png', App.getXCoord(lane), 1);
     this.speed = 100;
   }
+
   update(dt) {
     this.y = this.y + this.speed * dt;
     if (this.y > Constants.canvasSize.height - 170) {
@@ -173,13 +191,13 @@ class Star extends Entity {
 }
 
 
-const app = new App(); //eslint-disable-line no-unused-vars
+const app = new App();
 
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
-  var allowedKeys = {
+document.addEventListener('keyup', function (e) {
+  const allowedKeys = {
     37: 'left',
     38: 'up',
     39: 'right',
