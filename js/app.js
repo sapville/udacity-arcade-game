@@ -9,6 +9,7 @@ class Entity {
   }
 
   render () {
+    // noinspection Annotator
     window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
   }
 }
@@ -59,21 +60,24 @@ class Player extends Entity {
     this.y = App.getYCoord(this.lane);
     if (this.lane === 0) {
       app.parade();
-    } else {
-      app.collisionCheck(this);
+    } else if (!app.collisionCheck(this)) {
+      app.gemCheck();
     }
   }
-  blink() {
+
+  blink () {
     const interval = window.setInterval(() => {
       this.hide = !this.hide;
     }, 100);
     window.setTimeout(() => {
       this.hide = false;
       app.blinking = false;
+      app.scatterGems();
       this.lane = 4;
       window.clearInterval(interval);
     }, 1000);
   }
+
   render () {
     if (!(app.blinking && this.hide)) {
       super.render();
@@ -105,14 +109,16 @@ class App {
     this.player = new Player(App.getRandomIntInclusive(0, 4));
     this.allEnemies = [];
     this.stars = [];
-    this.enemyNumber = 3;
+    this.gems = [];
     this.bang = false;
     this.blinking = false;
+    this.enemyNumber = 3;
     for (let i = 0; i < this.enemyNumber; i++) {
       this.allEnemies.push(new Enemy(
         App.getRandomIntInclusive(...App.getSpeedRange()), //speed
         App.getRandomIntInclusive(1, 3))); //lane
     }
+    this.scatterGems();
     document.getElementById('btn-stop').addEventListener('click', () => {
       this.stopRendering = true;
     });
@@ -120,6 +126,10 @@ class App {
 
   getStars () {
     return this.stars;
+  }
+
+  getGems () {
+    return this.gems;
   }
 
   getEnemies () {
@@ -153,6 +163,29 @@ class App {
     }
   }
 
+  gemCheck () {
+    const gemIndex = this.gems.findIndex((gem) => gem.lane === this.player.lane && gem.mile === this.player.mile);
+    if (gemIndex >= 0) {
+      this.gems.splice(gemIndex, 1);
+    }
+  }
+
+  scatterGems () {
+    this.gems.splice(0, this.gems.length);
+
+    const tileNumber = App.getUniqueRandoms(1, 15, 3).values();
+
+    this.addGem(tileNumber.next().value,'images/Gem Blue.png');
+    this.addGem(tileNumber.next().value,'images/Gem Green.png');
+    this.addGem(tileNumber.next().value,'images/Gem Orange.png');
+  }
+
+  addGem(number, sprite) {
+    const lane = Math.ceil(number / 5);
+    const mile = number % 5 === 0 ? 4 : number % 5 - 1;
+    this.gems.push(new Gem(lane, mile, sprite));
+  }
+
   parade () {
     let i = 0;
     this.isParading = true;
@@ -166,7 +199,6 @@ class App {
       }, 1000 * 5);
 */
   }
-
 
   //do not use when the size is large
   static getUniqueRandoms (min, max, size) {
@@ -213,11 +245,18 @@ class Star extends Entity {
       this.y = 1;
     }
   }
+}
+
+class Gem extends Entity {
+  constructor (lane, mile, sprite) {
+    super(sprite, App.getXCoord(mile) + 20, App.getYCoord(lane) + 42);
+    this.lane = lane;
+    this.mile = mile;
+  }
 
   render () {
-    if (!this.hidden) {
-      super.render();
-    }
+    // noinspection Annotator
+    window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y, 63, 106);
   }
 }
 

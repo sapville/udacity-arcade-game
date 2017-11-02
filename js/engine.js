@@ -156,6 +156,7 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
     /* Loop through all of the objects within the allEnemies array and call
      * the render function you have defined.
      */
+    app.getGems().forEach((gem) => {gem.render();});
     app.getEnemies().forEach(function(enemy) {
       enemy.render();
     });
@@ -182,7 +183,10 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
     'images/enemy-bug.png',
     'images/char-boy.png',
     'images/char-cat-girl.png',
-    'images/Star.png'
+    'images/Star.png',
+    'images/Gem Blue.png',
+    'images/Gem Green.png',
+    'images/Gem Orange.png'
   ]);
   window.Resources.onReady(init);
 
