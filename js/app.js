@@ -29,7 +29,7 @@ class Enemy extends Entity {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
     // all computers.
-    if (app.isParading || app.blinking) {
+    if (app.status === Constants.appStatus.parading || app.status === Constants.appStatus.blinking) {
       return;
     }
     this.x = this.x + this.speed * dt;
@@ -53,7 +53,7 @@ class Player extends Entity {
   }
 
   update () {
-    if (app.isParading || app.blinking) {
+    if (app.status === Constants.appStatus.parading || app.status === Constants.appStatus.blinking) {
       return;
     }
     this.x = App.getXCoord(this.mile);
@@ -71,7 +71,7 @@ class Player extends Entity {
     }, 100);
     window.setTimeout(() => {
       this.hide = false;
-      app.blinking = false;
+      app.status = Constants.appStatus.waitingForStart;
       app.scatterGems();
       this.lane = 4;
       window.clearInterval(interval);
@@ -79,7 +79,7 @@ class Player extends Entity {
   }
 
   render () {
-    if (!(app.blinking && this.hide)) {
+    if (!(app.status === Constants.appStatus.blinking && this.hide)) {
       super.render();
     }
   }
@@ -105,13 +105,11 @@ class Player extends Entity {
 class App {
   constructor () {
     this.stopRendering = false;
-    this.isParading = false;
+    this.status = Constants.appStatus.waitingForStart;
     this.player = new Player(App.getRandomIntInclusive(0, 4));
     this.allEnemies = [];
     this.stars = [];
     this.gems = [];
-    this.bang = false;
-    this.blinking = false;
     this.enemyNumber = 3;
     for (let i = 0; i < this.enemyNumber; i++) {
       this.allEnemies.push(new Enemy(
@@ -147,14 +145,14 @@ class App {
   collisionCheck (caller, lane, x) {
     if (caller instanceof Enemy) {
       if (lane === this.player.lane && App.getMile(x) === this.player.mile) {
-        this.bang = true;
+        this.status = Constants.appStatus.bang;
+        return true;
       }
-      return this.bang;
+      return false;
     }
     if (caller instanceof Player) {
-      if (this.bang) {
-        this.bang = false;
-        this.blinking = true;
+      if (this.status === Constants.appStatus.bang) {
+        this.status = Constants.appStatus.blinking;
         this.player.blink();
         return true;
       } else {
@@ -188,7 +186,7 @@ class App {
 
   parade () {
     let i = 0;
-    this.isParading = true;
+    this.status = Constants.appStatus.parading;
     App.getUniqueRandoms(0, 4, 5).forEach((mile) => { //
       window.setTimeout(() => { //
         this.stars.push(new Star(mile));
