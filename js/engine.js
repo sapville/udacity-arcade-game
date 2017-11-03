@@ -161,6 +161,7 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
       enemy.render();
     });
     app.getStars().forEach( (star) => {star.render();});
+    app.getStones().forEach( (stone) => {stone.render();});
     app.getPlayer().render();
   }
 
@@ -186,7 +187,8 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
     'images/Star.png',
     'images/Gem Blue.png',
     'images/Gem Green.png',
-    'images/Gem Orange.png'
+    'images/Gem Orange.png',
+    'images/Rock.png'
   ]);
   window.Resources.onReady(init);
 
