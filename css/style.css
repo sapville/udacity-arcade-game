@@ -1,3 +1,104 @@
+* {
+    /*border: solid 1px red;*/
+}
+
 body {
-  text-align: center;
+    text-align: center;
+}
+
+.container {
+    width: 100%;
+    display: flex;
+}
+
+.controls {
+    align-self: center;
+    float: left;
+    padding: 0 50px;
+    width: 25%;
+}
+
+.sl-number {
+    color: #8bd46a;
+    font-family: 'Lobster', cursive;
+    font-size: 1.5em;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.sl-input {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 2px;
+    background: #8bd46a;
+    outline: none;
+    margin: 0 0 15px;
+
+}
+
+.sl-input-inactive {
+    opacity: 0.5;
+}
+
+.sl-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.sl-input-inactive::-webkit-slider-thumb {
+    cursor: not-allowed;
+}
+
+.sl-input::-moz-range-thumb {
+    cursor: pointer;
+}
+
+.sl-input-inactive::-moz-range-thumb {
+    cursor: not-allowed;
+}
+
+.sl-input-bug::-webkit-slider-thumb {
+    background: url("../images/enemy-bug-thumb50.png") no-repeat;
+    width: 50px;
+    height: 50px;
+}
+
+.sl-input-bug::-moz-range-thumb {
+    width: 50px;
+    height: 50px;
+    background: url("../images/enemy-bug-thumb50.png") no-repeat;
+}
+
+.sl-input-gem::-webkit-slider-thumb {
+    width: 40px;
+    height: 40px;
+    background: url("../images/Gem Orange Thumb40.png") no-repeat;
+}
+
+.sl-input-gem::-moz-range-thumb {
+    width: 40px;
+    height: 40px;
+    background: url("../images/Gem Orange Thumb40.png") no-repeat;
+}
+
+.button {
+    background-color: #5fc148;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    font-family: 'Lobster', cursive;
+    font-size: 2em;
+    margin-top: 60px;
+    padding: 0;
+    height: 80px;
+    width: 49%;
+}
+
+.button-inactive {
+    color: #5fc148;
+    cursor: not-allowed;
+    background-color: white;
+    border: solid 2px #5fc148;
+    opacity: 0.5;
 }

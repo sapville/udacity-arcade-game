@@ -17,7 +17,7 @@ app
  * writing app.js a little simpler to work with.
  */
 
-const Engine = (function(global) { //eslint-disable-line no-unused-vars
+const Engine = (function (global) { //eslint-disable-line no-unused-vars
   /* Predefine the variables we'll be using within this scope,
    * create the canvas element, grab the 2D context for that canvas
    * set the canvas elements height/width and add it to the DOM.
@@ -26,16 +26,17 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
     win = global.window,
     canvas = doc.createElement('canvas'),
     ctx = canvas.getContext('2d');
-  let  lastTime;
+  let lastTime;
 
   canvas.width = Constants.canvasSize.width;
   canvas.height = Constants.canvasSize.height;
-  doc.body.appendChild(canvas);
+  // doc.body.appendChild(canvas);
+  doc.querySelector('.container').appendChild(canvas);
 
   /* This function serves as the kickoff point for the game loop itself
    * and handles properly calling the update and render methods.
    */
-  function main() {
+  function main () {
     /* Get our time delta information which is required if your game
      * requires smooth animation. Because everyone's computer processes
      * instructions at different speeds we need a constant value that
@@ -68,7 +69,7 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
    * particularly setting the lastTime variable that is required for the
    * game loop.
    */
-  function init() {
+  function init () {
     reset();
     lastTime = Date.now();
     main();
@@ -83,7 +84,7 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
    * functionality this way (you could just implement collision detection
    * on the entities themselves within your app.js file).
    */
-  function update(dt) {
+  function update (dt) {
     updateEntities(dt);
     // checkCollisions();
   }
@@ -95,11 +96,11 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
    * the data/properties related to the object. Do your drawing in your
    * render methods.
    */
-  function updateEntities(dt) {
-    app.getEnemies().forEach(function(enemy) {
+  function updateEntities (dt) {
+    app.getEnemies().forEach(function (enemy) {
       enemy.update(dt);
     });
-    app.getStars().forEach( (star) => {star.update(dt);} );
+    app.getStars().forEach((star) => {star.update(dt);});
     app.getPlayer().update();
   }
 
@@ -109,7 +110,7 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
    * they are flipbooks creating the illusion of animation but in reality
    * they are just drawing the entire screen over and over.
    */
-  function render() {
+  function render () {
     /* This array holds the relative URL to the image used
      * for that particular row of the game level.
      */
@@ -123,7 +124,7 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
       ],
       numRows = 6,
       numCols = 5;
-      let row, col;
+    let row, col;
 
     /* Loop through the number of rows and columns we've defined above
      * and, using the rowImages array, draw the correct image for that
@@ -152,16 +153,16 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
    * tick. Its purpose is to then call the render functions you have defined
    * on your enemy and player entities within app.js
    */
-  function renderEntities() {
+  function renderEntities () {
     /* Loop through all of the objects within the allEnemies array and call
      * the render function you have defined.
      */
     app.getGems().forEach((gem) => {gem.render();});
-    app.getEnemies().forEach(function(enemy) {
+    app.getEnemies().forEach(function (enemy) {
       enemy.render();
     });
-    app.getStars().forEach( (star) => {star.render();});
-    app.getStones().forEach( (stone) => {stone.render();});
+    app.getStars().forEach((star) => {star.render();});
+    app.getStones().forEach((stone) => {stone.render();});
     app.getPlayer().render();
   }
 
@@ -169,7 +170,7 @@ const Engine = (function(global) { //eslint-disable-line no-unused-vars
    * handle game reset states - maybe a new game menu or a game over screen
    * those sorts of things. It's only called once by the init() method.
    */
-  function reset() {
+  function reset () {
     // noop
   }
 
