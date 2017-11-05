@@ -31,7 +31,7 @@ const Engine = (function (global) { //eslint-disable-line no-unused-vars
   canvas.width = Constants.canvasSize.width;
   canvas.height = Constants.canvasSize.height;
   // doc.body.appendChild(canvas);
-  doc.querySelector('.container').appendChild(canvas);
+  doc.querySelector('.app').appendChild(canvas);
 
   /* This function serves as the kickoff point for the game loop itself
    * and handles properly calling the update and render methods.
