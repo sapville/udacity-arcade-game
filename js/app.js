@@ -57,7 +57,7 @@ class Player extends Entity {
       return;
     }
     this.x = App.getXCoord(this.mile);
-    this.y = App.getYCoord(this.lane);
+    this.y = App.getYCoord(this.lane) + 11;
 
     if (app.collisionCheck(this)) {
       return;
@@ -110,7 +110,7 @@ class Player extends Entity {
         this.mile = this.mile === 4 ? 4 : this.mile + 1;
         break;
       case 'up':
-        if (app.status === Constants.appStatus.gameInProgress && (this.lane === 1)) {
+        if (app.status === Constants.appStatus.gameInProgress && this.lane === 1) {
           break;
         }
         this.lane = this.lane === 0 ? 0 : this.lane - 1;
@@ -130,11 +130,27 @@ class App {
     this.stopRendering = false;
     this.status = Constants.appStatus.waitingForStart;
     this.player = new Player(App.getRandomIntInclusive(0, 4));
+    this.failures = 0;
     this.allEnemies = [];
     this.stars = [];
     this.gems = [];
     this.stones = [];
-    this.enemyNumber = 3;
+    this.gemPics = [
+      'images/Gem Blue.png',
+      'images/Gem Green.png',
+      'images/Gem Orange.png'
+    ];
+    const slBug = document.querySelector('.sl-input-bug');
+    const slGem = document.querySelector('.sl-input-gem');
+    this.enemyNumber = slBug.value;
+    this.gemNumber = slGem.value;
+
+    slBug.oninput = function () {
+      document.querySelector('#lb-bugs').textContent = slBug.value;
+    };
+    slGem.oninput = function () {
+      document.querySelector('#lb-gems').textContent = slGem.value;
+    };
     for (let i = 0; i < this.enemyNumber; i++) {
       this.allEnemies.push(new Enemy(
         App.getRandomIntInclusive(...App.getSpeedRange()), //speed
@@ -144,6 +160,12 @@ class App {
     document.getElementById('btn-stop').addEventListener('click', () => {
       this.stopRendering = true;
     });
+    document.querySelector('#start').addEventListener('click', () => {
+      this.onStartClick();
+    });
+    document.querySelector('#stop').addEventListener('click', () => {
+      this.onStopClick();
+    });
   }
 
   getStars () {
@@ -152,6 +174,17 @@ class App {
 
   getGems () {
     return this.gems;
+  }
+
+  clearEntities (array) {
+    if (!(array instanceof Array)) {
+      return;
+    }
+    array.splice(0, array.length);
+  }
+
+  clearStones () {
+    this.clearEntities(this.stones);
   }
 
   getStones () {
@@ -170,10 +203,31 @@ class App {
     return this.stopRendering;
   }
 
+  onStartClick () {
+  }
+
+  onStopClick () {
+    this.status = Constants.appStatus.initial;
+    this.clearEntities(this.stones);
+    this.clearEntities(this.gems);
+    this.clearEntities(this.stars);
+    this.clearEntities(this.allEnemies);
+    this.player.lane = 4;
+    const btnStop = document.querySelector('#stop');
+    btnStop.disabled = true;
+    btnStop.classList.add('button-inactive');
+    const btnStart = document.querySelector('#start');
+    btnStart.disabled = false;
+    btnStart.classList.remove('button-inactive');
+    document.querySelectorAll('.slider').forEach((elem) => {elem.classList.remove('sl-input-inactive');});
+  }
+
   collisionCheck (caller, lane, x) {
     if (caller instanceof Enemy) {
       if (lane === this.player.lane && App.getMile(x) === this.player.mile) {
         this.status = Constants.appStatus.bang;
+        // this.failures++;
+        document.querySelector('#fail-num').textContent = ++this.failures;
         return true;
       }
       return false;
@@ -203,11 +257,11 @@ class App {
   scatterGems () {
     this.gems.splice(0, this.gems.length);
 
-    const tileNumber = App.getUniqueRandoms(1, 15, 3).values();
+    const tileNumber = App.getUniqueRandoms(1, 15, this.gemNumber).values();
 
-    this.addGem(tileNumber.next().value, 'images/Gem Blue.png');
-    this.addGem(tileNumber.next().value, 'images/Gem Green.png');
-    this.addGem(tileNumber.next().value, 'images/Gem Orange.png');
+    for (let i = 0; i < this.gemNumber; i++) {
+      this.addGem(tileNumber.next().value, this.gemPics[App.getRandomIntInclusive(0, 2)]);
+    }
   }
 
   throwStones () {
@@ -215,10 +269,6 @@ class App {
       this.stones.push(new Stone(0, i, 'images/Rock.png'));
       this.stones.push(new Stone(4, i, 'images/Rock.png'));
     }
-  }
-
-  clearStones () {
-    this.stones.splice(0, this.stones.length);
   }
 
   addGem (number, sprite) {
@@ -235,10 +285,6 @@ class App {
         this.stars.push(new Star(mile));
       }, 1000 * i++);
     });
-    /*window.setTimeout(() => {
-      this.stars.push(new Star(0, false));
-      }, 1000 * 5);
-*/
   }
 
   //do not use when the size is large
@@ -302,7 +348,7 @@ class Gem extends Entity {
 
 class Stone extends Entity {
   constructor (lane, mile, sprite) {
-    super(sprite, App.getXCoord(mile), App.getYCoord(lane)+6);
+    super(sprite, App.getXCoord(mile), App.getYCoord(lane) + 6);
   }
 }
 

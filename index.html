@@ -14,26 +14,26 @@
 <main class="container">
     <div class="controls">
         <div class="control">
-            <div class="slider">
-                <p class="sl-number">3</p>
-                <input type="range" min="1" max="5" value="3" class="sl-input sl-input-bug">
+            <div class="slider sl-input-inactive">
+                <label id="lb-bugs" class="sl-number" for="sl-bugs">3</label>
+                <input id="sl-bugs" type="range" min="1" max="5" value="3" class="sl-input sl-input-bug">
             </div>
         </div>
         <div class="control">
-            <div class="slider">
-                <p class="sl-number">3</p>
-                <input type="range" min="2" max="10" value="3" class="sl-input sl-input-gem">
+            <div class="slider sl-input-inactive">
+                <label id="lb-gems" class="sl-number" for="sl-gems">3</label>
+                <input id="sl-gems" type="range" min="2" max="10" value="3" class="sl-input sl-input-gem">
             </div>
         </div>
         <div class="buttons">
-            <button class="button button-active" id="start">Start</button>
-            <button class="button button-inactive" id="stop">Stop</button>
+            <button class="button button-inactive" id="start">Start</button>
+            <button class="button button-active" id="stop">Stop</button>
         </div>
     </div>
     <div class="app">
     </div>
     <div class="failed">
-        <p class="failure-count">Your failures: <span id="fail-num">0</span></p>
+        <p class="failure-count">Failed: <span id="fail-num">0</span></p>
     </div>
 
 </main>
