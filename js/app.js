@@ -128,7 +128,7 @@ class Player extends Entity {
 class App {
   constructor () {
     this.stopRendering = false;
-    this.status = Constants.appStatus.waitingForStart;
+    this.status = Constants.appStatus.initial;
     this.player = new Player(App.getRandomIntInclusive(0, 4));
     this.failures = 0;
     this.allEnemies = [];
@@ -142,21 +142,18 @@ class App {
     ];
     const slBug = document.querySelector('.sl-input-bug');
     const slGem = document.querySelector('.sl-input-gem');
+    slBug.value = 3;
+    slGem.value = 3;
     this.enemyNumber = slBug.value;
     this.gemNumber = slGem.value;
-
+    document.querySelector('#lb-bugs').textContent = String(slBug.value);
+    document.querySelector('#lb-gems').textContent = String(slGem.value);
     slBug.oninput = function () {
-      document.querySelector('#lb-bugs').textContent = slBug.value;
+      document.querySelector('#lb-bugs').textContent = String(slBug.value);
     };
     slGem.oninput = function () {
-      document.querySelector('#lb-gems').textContent = slGem.value;
+      document.querySelector('#lb-gems').textContent = String(slGem.value);
     };
-    for (let i = 0; i < this.enemyNumber; i++) {
-      this.allEnemies.push(new Enemy(
-        App.getRandomIntInclusive(...App.getSpeedRange()), //speed
-        App.getRandomIntInclusive(1, 3))); //lane
-    }
-    this.scatterGems();
     document.getElementById('btn-stop').addEventListener('click', () => {
       this.stopRendering = true;
     });
@@ -204,6 +201,32 @@ class App {
   }
 
   onStartClick () {
+    this.status = Constants.appStatus.waitingForStart;
+    this.enemyNumber = document.querySelector('.sl-input-bug').value;
+    this.gemNumber = document.querySelector('.sl-input-gem').value;
+    for (let i = 0; i < this.enemyNumber; i++) {
+      this.allEnemies.push(new Enemy(
+        App.getRandomIntInclusive(...App.getSpeedRange()), //speed
+        App.getRandomIntInclusive(1, 3))); //lane
+    }
+    this.scatterGems();
+    this.player.lane = 4;
+    const btnStop = document.querySelector('#stop');
+    btnStop.disabled = false;
+    btnStop.classList.remove('button-inactive');
+    const btnStart = document.querySelector('#start');
+    btnStart.disabled = true;
+    btnStart.classList.add('button-inactive');
+    document.querySelectorAll('.sl-number').forEach(
+      (elem) => {
+        elem.classList.add('sl-input-inactive');
+      }
+    );
+    document.querySelectorAll('.sl-input').forEach((elem) => {
+      elem.disabled = true;
+      elem.classList.add('sl-input-inactive');
+    });
+
   }
 
   onStopClick () {
@@ -212,22 +235,30 @@ class App {
     this.clearEntities(this.gems);
     this.clearEntities(this.stars);
     this.clearEntities(this.allEnemies);
-    this.player.lane = 4;
+    this.failures = 0;
+    document.querySelector('#fail-num').textContent = String(this.failures);
     const btnStop = document.querySelector('#stop');
     btnStop.disabled = true;
     btnStop.classList.add('button-inactive');
     const btnStart = document.querySelector('#start');
     btnStart.disabled = false;
     btnStart.classList.remove('button-inactive');
-    document.querySelectorAll('.slider').forEach((elem) => {elem.classList.remove('sl-input-inactive');});
+    document.querySelectorAll('.sl-number').forEach(
+      (elem) => {
+        elem.classList.remove('sl-input-inactive');
+      }
+    );
+    document.querySelectorAll('.sl-input').forEach((elem) => {
+      elem.disabled = false;
+      elem.classList.remove('sl-input-inactive');
+    });
   }
 
   collisionCheck (caller, lane, x) {
     if (caller instanceof Enemy) {
       if (lane === this.player.lane && App.getMile(x) === this.player.mile) {
         this.status = Constants.appStatus.bang;
-        // this.failures++;
-        document.querySelector('#fail-num').textContent = ++this.failures;
+        document.querySelector('#fail-num').textContent = String(++this.failures);
         return true;
       }
       return false;
@@ -282,7 +313,9 @@ class App {
     this.status = Constants.appStatus.parading;
     App.getUniqueRandoms(0, 4, 5).forEach((mile) => { //
       window.setTimeout(() => { //
-        this.stars.push(new Star(mile));
+        if (this.status === Constants.appStatus.parading) {
+          this.stars.push(new Star(mile));
+        }
       }, 1000 * i++);
     });
   }
