@@ -165,6 +165,24 @@ class App {
     });
   }
 
+  enableStart(enable) {
+    const btnStop = document.querySelector('#stop');
+    const btnStart = document.querySelector('#start');
+    btnStop.disabled = enable;
+    btnStart.disabled = !enable;
+    btnStop.classList.toggle('button-inactive');
+    btnStart.classList.toggle('button-inactive');
+    document.querySelectorAll('.sl-number').forEach(
+      (elem) => {
+        elem.classList.toggle('sl-input-inactive');
+      }
+    );
+    document.querySelectorAll('.sl-input').forEach((elem) => {
+      elem.disabled = !enable;
+      elem.classList.toggle('sl-input-inactive');
+    });
+  }
+
   getStars () {
     return this.stars;
   }
@@ -202,6 +220,8 @@ class App {
 
   onStartClick () {
     this.status = Constants.appStatus.waitingForStart;
+    this.clearEntities(this.stars);
+    this.clearEntities(this.allEnemies);
     this.enemyNumber = document.querySelector('.sl-input-bug').value;
     this.gemNumber = document.querySelector('.sl-input-gem').value;
     for (let i = 0; i < this.enemyNumber; i++) {
@@ -211,22 +231,9 @@ class App {
     }
     this.scatterGems();
     this.player.lane = 4;
-    const btnStop = document.querySelector('#stop');
-    btnStop.disabled = false;
-    btnStop.classList.remove('button-inactive');
-    const btnStart = document.querySelector('#start');
-    btnStart.disabled = true;
-    btnStart.classList.add('button-inactive');
-    document.querySelectorAll('.sl-number').forEach(
-      (elem) => {
-        elem.classList.add('sl-input-inactive');
-      }
-    );
-    document.querySelectorAll('.sl-input').forEach((elem) => {
-      elem.disabled = true;
-      elem.classList.add('sl-input-inactive');
-    });
-
+    this.failures = 0;
+    document.querySelector('#fail-num').textContent = String(this.failures);
+    this.enableStart(false);
   }
 
   onStopClick () {
@@ -235,23 +242,7 @@ class App {
     this.clearEntities(this.gems);
     this.clearEntities(this.stars);
     this.clearEntities(this.allEnemies);
-    this.failures = 0;
-    document.querySelector('#fail-num').textContent = String(this.failures);
-    const btnStop = document.querySelector('#stop');
-    btnStop.disabled = true;
-    btnStop.classList.add('button-inactive');
-    const btnStart = document.querySelector('#start');
-    btnStart.disabled = false;
-    btnStart.classList.remove('button-inactive');
-    document.querySelectorAll('.sl-number').forEach(
-      (elem) => {
-        elem.classList.remove('sl-input-inactive');
-      }
-    );
-    document.querySelectorAll('.sl-input').forEach((elem) => {
-      elem.disabled = false;
-      elem.classList.remove('sl-input-inactive');
-    });
+    this.enableStart(true);
   }
 
   collisionCheck (caller, lane, x) {
@@ -311,6 +302,7 @@ class App {
   parade () {
     let i = 0;
     this.status = Constants.appStatus.parading;
+    this.enableStart(true);
     App.getUniqueRandoms(0, 4, 5).forEach((mile) => { //
       window.setTimeout(() => { //
         if (this.status === Constants.appStatus.parading) {
