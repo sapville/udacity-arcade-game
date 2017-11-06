@@ -25,6 +25,7 @@ class Enemy extends Entity {
 
   // Update the enemy's position, required method for game
   // Parameter: dt, a time delta between ticks
+  // noinspection JSUnusedGlobalSymbols
   update (dt) {
     // You should multiply any movement by the dt parameter
     // which will ensure the game runs at the same speed for
@@ -52,6 +53,7 @@ class Player extends Entity {
     this.hide = false;
   }
 
+  // noinspection JSUnusedGlobalSymbols
   update () {
     if (app.status === Constants.appStatus.parading || app.status === Constants.appStatus.blinking) {
       return;
@@ -153,10 +155,8 @@ class App {
     };
     slGem.oninput = function () {
       document.querySelector('#lb-gems').textContent = String(slGem.value);
-    };
-    document.getElementById('btn-stop').addEventListener('click', () => {
-      this.stopRendering = true;
-    });
+    } ;
+
     document.querySelector('#start').addEventListener('click', () => {
       this.onStartClick();
     });
@@ -191,7 +191,7 @@ class App {
     return this.gems;
   }
 
-  clearEntities (array) {
+  static clearEntities (array) {
     if (!(array instanceof Array)) {
       return;
     }
@@ -199,7 +199,7 @@ class App {
   }
 
   clearStones () {
-    this.clearEntities(this.stones);
+    App.clearEntities(this.stones);
   }
 
   getStones () {
@@ -220,8 +220,8 @@ class App {
 
   onStartClick () {
     this.status = Constants.appStatus.waitingForStart;
-    this.clearEntities(this.stars);
-    this.clearEntities(this.allEnemies);
+    App.clearEntities(this.stars);
+    App.clearEntities(this.allEnemies);
     this.enemyNumber = document.querySelector('.sl-input-bug').value;
     this.gemNumber = document.querySelector('.sl-input-gem').value;
     for (let i = 0; i < this.enemyNumber; i++) {
@@ -238,10 +238,10 @@ class App {
 
   onStopClick () {
     this.status = Constants.appStatus.initial;
-    this.clearEntities(this.stones);
-    this.clearEntities(this.gems);
-    this.clearEntities(this.stars);
-    this.clearEntities(this.allEnemies);
+    App.clearEntities(this.stones);
+    App.clearEntities(this.gems);
+    App.clearEntities(this.stars);
+    App.clearEntities(this.allEnemies);
     this.enableStart(true);
   }
 
@@ -351,6 +351,7 @@ class Star extends Entity {
     this.speed = 90;
   }
 
+  // noinspection JSUnusedGlobalSymbols
   update (dt) {
     this.y = this.y + this.speed * dt;
     if (this.y > Constants.canvasSize.height - 170) {
@@ -367,6 +368,7 @@ class Gem extends Entity {
   }
 
   render () {
+    // noinspection Annotator
     window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y, 63, 106);
   }
 }

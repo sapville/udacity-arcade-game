@@ -6,11 +6,12 @@
     <title>Frogger</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css?family=Lobster" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
-<button id="btn-stop" type="button" name="btn-stop"> Stop!</button>
+<!--<button id="btn-stop" type="button" name="btn-stop"> Stop!</button>-->
 <main class="container">
     <div class="controls">
         <div class="control">
@@ -31,12 +32,31 @@
         </div>
     </div>
     <div class="app">
+        <div class="key-map-row">
+            <div class="key-map">
+                <i class="fa fa-arrow-right key-map-key" aria-hidden="true"></i>
+                <p class="key-map-text">Move right</p>
+            </div>
+            <div class="key-map">
+                <i class="fa fa-arrow-left key-map-key" aria-hidden="true"></i>
+                <p class="key-map-text">Move left</p>
+            </div>
+            <div class="key-map">
+                <i class="fa fa-arrow-up key-map-key" aria-hidden="true"></i>
+                <p class="key-map-text">Move up</p>
+            </div>
+            <div class="key-map">
+                <i class="fa fa-arrow-down key-map-key" aria-hidden="true"></i>
+                <p class="key-map-text">Move down</p>
+            </div>
+        </div>
     </div>
     <div class="failed">
         <p class="failure-count">Failed: <span id="fail-num">0</span></p>
     </div>
-
 </main>
+
+
 <script src="js/constants.js"></script>
 <script src="js/resources.js"></script>
 <script src="js/app.js"></script>
