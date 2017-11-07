@@ -22,6 +22,7 @@ const Engine = (function (global) { //eslint-disable-line no-unused-vars
    * create the canvas element, grab the 2D context for that canvas
    * set the canvas elements height/width and add it to the DOM.
    */
+  // noinspection Annotator
   const doc = global.document,
     win = global.window,
     canvas = doc.createElement('canvas'),
@@ -33,6 +34,7 @@ const Engine = (function (global) { //eslint-disable-line no-unused-vars
   // doc.body.appendChild(canvas);
   const appNode = doc.querySelector('.app');
   appNode.insertBefore(canvas, appNode.childNodes[0]);
+
   /* This function serves as the kickoff point for the game loop itself
    * and handles properly calling the update and render methods.
    */
@@ -60,9 +62,9 @@ const Engine = (function (global) { //eslint-disable-line no-unused-vars
     /* Use the browser's requestAnimationFrame function to call this
      * function again as soon as the browser is able to draw another frame.
      */
-    if (!app.isStopRendering()) {
-      win.requestAnimationFrame(main);
-    }
+    // if (!app.isStopRendering()) {
+    win.requestAnimationFrame(main);
+    // }
   }
 
   /* This function does some initial setup that should only occur once,

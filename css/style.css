@@ -1,4 +1,5 @@
 body {
+  margin: 0;
   text-align: center;
 }
 
@@ -146,43 +147,11 @@ body {
 
 /* ---------------------------------------------------------------------------------- */
 
-/* Key-map area */
-
-/* ---------------------------------------------------------------------------------- */
-
-.key-map-row {
-  color: #5fc148;
-  display: flex;
-  flex-flow: nowrap row;
-  font-family: 'Lobster', cursive;
-  -webkit-flex-flow: nowrap row;
-  width: 505px;
-}
-
-.key-map {
-  display: flex;
-  flex-flow: nowrap row;
-  -webkit-flex-flow: nowrap row;
-  width: 25%;
-}
-
-.key-map-key {
-  font-size: 1.5em;
-  padding: 5px;
-}
-
-.key-map-text {
-  font-size: 1.2em;
-  margin: 0;
-  padding: 5px 0;
-}
-
-/* ---------------------------------------------------------------------------------- */
-
 /* Media-queries */
 
 /* ---------------------------------------------------------------------------------- */
 
+/* noinspection CssUnknownProperty */
 @media screen and (max-width: 848px) {
   .container {
     flex-direction: column;
