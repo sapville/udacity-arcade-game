@@ -1,7 +1,315 @@
 /*globals
   Constants
  */
+
+/**
+ * The class manages the entire application
+ */
+class App {
+  constructor () {
+    // this.stopRendering = false;
+
+    //attributes
+    this.status = Constants.appStatus.initial;
+    this.player = new Player(App.getRandomIntInclusive(0, 4));
+    this.failures = 0; //number of attempts
+    this.allEnemies = [];
+    this.stars = [];
+    this.gems = [];
+    this.stones = [];
+    this.gemPics = [
+      'images/Gem Blue.png',
+      'images/Gem Green.png',
+      'images/Gem Orange.png'
+    ];
+
+    //set initial state
+    const slBug = document.querySelector('.sl-input-bug');
+    const slGem = document.querySelector('.sl-input-gem');
+    slBug.value = 3;
+    slGem.value = 3;
+    this.enemyNumber = slBug.value;
+    this.gemNumber = slGem.value;
+    document.querySelector('#lb-bugs').textContent = String(slBug.value);
+    document.querySelector('#lb-gems').textContent = String(slGem.value);
+
+    //set event handlers
+    slBug.oninput = function () {
+      document.querySelector('#lb-bugs').textContent = String(slBug.value);
+    };
+    slGem.oninput = function () {
+      document.querySelector('#lb-gems').textContent = String(slGem.value);
+    };
+    document.querySelector('#start').addEventListener('click', () => {
+      this.onStartClick();
+    });
+    document.querySelector('#stop').addEventListener('click', () => {
+      this.onStopClick();
+    });
+  }
+
+  /**
+   * Enable and disable controls depending on the stage of the game
+   * @param enable  true - enable Start button and disable all other controls
+   *                false - vice versa
+   */
+  enableStart (enable) {
+    const btnStop = document.querySelector('#stop');
+    const btnStart = document.querySelector('#start');
+    btnStop.disabled = enable;
+    btnStart.disabled = !enable;
+    btnStop.classList.toggle('button-inactive');
+    btnStart.classList.toggle('button-inactive');
+    document.querySelectorAll('.sl-number').forEach(
+      (elem) => {
+        elem.classList.toggle('sl-input-inactive');
+      }
+    );
+    document.querySelectorAll('.sl-input').forEach((elem) => {
+      elem.disabled = !enable;
+      elem.classList.toggle('sl-input-inactive');
+    });
+  }
+
+  getStars () {
+    return this.stars;
+  }
+
+  getGems () {
+    return this.gems;
+  }
+
+  clearStones () {
+    App.clearEntities(this.stones);
+  }
+
+  setCTX (ctx) {
+    this.ctx = ctx;
+  }
+
+  getStones () {
+    return this.stones;
+  }
+
+  getEnemies () {
+    return this.allEnemies;
+  }
+
+  getPlayer () {
+    return this.player;
+  }
+
+  /*
+    isStopRendering () {
+      return this.stopRendering;
+    }
+  */
+
+  onStartClick () {
+    this.status = Constants.appStatus.waitingForStart;
+    App.clearEntities(this.stars);      //empty the array with stars
+    App.clearEntities(this.allEnemies); //empty the array with enemies
+
+    this.enemyNumber = document.querySelector('.sl-input-bug').value;
+    this.gemNumber = document.querySelector('.sl-input-gem').value;
+    //create new enemies
+    for (let i = 0; i < this.enemyNumber; i++) {
+      this.allEnemies.push(new Enemy(
+        App.getRandomIntInclusive(...App.getSpeedRange()), //speed
+        App.getRandomIntInclusive(1, 3))); //lane
+    }
+
+    //create new gems
+    this.scatterGems();
+
+    //set initial values
+    this.player.lane = 4;
+    this.failures = 0;
+    document.querySelector('#fail-num').textContent = String(this.failures);
+
+    //disable other controls and enable Stop button
+    this.enableStart(false);
+  }
+
+  onStopClick () {
+    this.status = Constants.appStatus.initial;
+
+    //clear all entities
+    App.clearEntities(this.stones);
+    App.clearEntities(this.gems);
+    App.clearEntities(this.stars);
+    App.clearEntities(this.allEnemies);
+
+    //disable Stop button and enable other controls
+    this.enableStart(true);
+  }
+
+  /**
+   * maintain the collision between Player end Enemy
+   * @param caller        an object checking the collision
+   * @param lane          the lane where the collision took place
+   * @param x             the x-coordinate where the collision took place
+   * @returns {boolean}   true if the collision took place
+   */
+  collisionCheck (caller, lane, x) {
+    if (caller instanceof Enemy) {
+      if (lane === this.player.lane && App.getMile(x) === this.player.mile) {
+        this.status = Constants.appStatus.bang; //the enemy is one who signals about collision
+        document.querySelector('#fail-num').textContent = String(++this.failures);
+        return true;
+      }
+      return false;
+    }
+    if (caller instanceof Player) {
+      if (this.status === Constants.appStatus.bang) { // check if an enemy has sent a signal of collision
+        this.status = Constants.appStatus.blinking;
+        this.player.blink(); //further asynchronous actions after the collision are placed in this method
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  /**
+   * check if the Player found a gem
+   */
+  gemCheck () {
+    const gemIndex = this.gems.findIndex((gem) => gem.lane === this.player.lane && gem.mile === this.player.mile);
+    if (gemIndex >= 0) {
+      this.gems.splice(gemIndex, 1); //if found, a gem is to be deleted
+      if (this.gems.length === 0) { //if no gems are left then victory!
+        this.clearStones();  //clear the way to the sea
+        this.status = Constants.appStatus.allClear;
+      }
+    }
+  }
+
+  /**
+   * put gems to pick up
+   */
+  scatterGems () {
+    this.gems.splice(0, this.gems.length); //clear what have been left from a previous attempt
+
+    const tileNumber = App.getUniqueRandoms(1, 15, this.gemNumber).values(); //get the set object containing numbers of tiles to set gems on
+
+    for (let i = 0; i < this.gemNumber; i++) {
+      this.addGem(tileNumber.next().value, this.gemPics[App.getRandomIntInclusive(0, 2)]);
+    }
+  }
+
+  /**
+   * build walls preventing reaching the see and returning to the grass field when the game is in progress
+   */
+  throwStones () {
+    for (let i = 0; i < 5; i++) {
+      this.stones.push(new Stone(0, i, 'images/Rock.png')); //lane 0
+      this.stones.push(new Stone(4, i, 'images/Rock.png')); //lane 4
+    }
+  }
+
+  /**
+   * convert the sequential number of a tile to the x(mile) and y(lane) coordinates
+   * @param number  the sequential number of a tile
+   * @param sprite  gem image
+   */
+  addGem (number, sprite) {
+    const lane = Math.ceil(number / 5);
+    const mile = number % 5 === 0 ? 4 : number % 5 - 1;
+    this.gems.push(new Gem(lane, mile, sprite));
+  }
+
+  /**
+   * make star shower after the victory
+   */
+  parade () {
+    let i = 0;
+    this.status = Constants.appStatus.parading;
+    this.enableStart(true); //enable Start button and other controls
+    App.getUniqueRandoms(0, 4, 5).forEach((mile) => { //choose the mile for a star to fall on randomly
+      window.setTimeout(() => { //
+        if (this.status === Constants.appStatus.parading) {
+          this.stars.push(new Star(mile)); //create one star per second
+        }
+      }, 1000 * i++);
+    });
+  }
+
+  /**
+   * clear an array with Entities
+   * @param array an array to clear
+   */
+  static clearEntities (array) {
+    if (!(array instanceof Array)) {
+      return;
+    }
+    array.splice(0, array.length);
+  }
+
+  //do not use when the size is large
+  /**
+   * get the set with unique integer values within a given range in a random order
+   * @param min     the minimal value of the range
+   * @param max     the maximum value of the range
+   * @param size    the size of the range
+   * @returns {Set}
+   */
+  static getUniqueRandoms (min, max, size) {
+    const randoms = new Set();
+    //one can insert only unique values to sets; try to insert a new value until all of them are unique
+    while (randoms.size < size) {randoms.add(App.getRandomIntInclusive(min, max));}
+    return randoms;
+  }
+
+  /**
+   * get a random integer value within a given range
+   * @param min   the minimal value of the range
+   * @param max   the maximum value of the range
+   * @returns {*}
+   */
+  static getRandomIntInclusive (min, max) {
+    //the algorithm is taken from the article on Math.random() on developer.mozilla.org
+    const rand = Math.random();
+    return Math.floor(rand * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+  }
+
+  /**
+   * return the range within which the enemy speed lies (the wider the range the more speed will differ, the larger the values the faster enemies will move)
+   * @returns {[number,number]}
+   */
+  static getSpeedRange () {
+    return [100, 400];
+  }
+
+  /**
+   * get x-number of a tile by its x-coordinate in pixels
+   * @param x
+   * @returns {number}
+   */
+  static getMile (x) {
+    return Math.floor(x / Constants.tileSize.width);
+  }
+
+  //TODO here I stopped commenting
+  static getYCoord (lane) {
+    return lane * Constants.tileSize.height - 22;
+  }
+
+  static getXCoord (mile) {
+    return mile * Constants.tileSize.width;
+  }
+
+}
+
+/**
+ * Superclass for all objects appearing on the field
+ */
 class Entity {
+  /**
+   * @param sprite  entity image
+   * @param x       initial x-coordinate
+   * @param y       initial y-coordinate
+   */
   constructor (sprite, x, y) {
     this.sprite = sprite;
     this.x = x;
@@ -10,26 +318,31 @@ class Entity {
 
   render () {
     // noinspection Annotator
-    window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
+    app.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
   }
 }
 
-// Enemies our player must avoid
+/**
+ * Enemies our player must avoid
+ */
 class Enemy extends Entity {
+  /**
+   * @param speed   px per second
+   * @param lane    lane number beginning with 0
+   */
   constructor (speed, lane) {
     super('images/enemy-bug.png', 1, App.getYCoord(lane));
     this.lane = lane;
-    this.speed = speed; //px per second
+    this.speed = speed;
     this.width = 50;
   }
 
-  // Update the enemy's position, required method for game
-  // Parameter: dt, a time delta between ticks
   // noinspection JSUnusedGlobalSymbols
+  /**
+   * The method is called from the engine and calculates the coordinate of the entity before rendering
+   * @param dt  The time between two renderings - allows to adjust to the performance of a PC app is run on
+   */
   update (dt) {
-    // You should multiply any movement by the dt parameter
-    // which will ensure the game runs at the same speed for
-    // all computers.
     if (app.status === Constants.appStatus.parading || app.status === Constants.appStatus.blinking) {
       return;
     }
@@ -127,224 +440,6 @@ class Player extends Entity {
   }
 }
 
-class App {
-  constructor () {
-    this.stopRendering = false;
-    this.status = Constants.appStatus.initial;
-    this.player = new Player(App.getRandomIntInclusive(0, 4));
-    this.failures = 0;
-    this.allEnemies = [];
-    this.stars = [];
-    this.gems = [];
-    this.stones = [];
-    this.gemPics = [
-      'images/Gem Blue.png',
-      'images/Gem Green.png',
-      'images/Gem Orange.png'
-    ];
-    const slBug = document.querySelector('.sl-input-bug');
-    const slGem = document.querySelector('.sl-input-gem');
-    slBug.value = 3;
-    slGem.value = 3;
-    this.enemyNumber = slBug.value;
-    this.gemNumber = slGem.value;
-    document.querySelector('#lb-bugs').textContent = String(slBug.value);
-    document.querySelector('#lb-gems').textContent = String(slGem.value);
-    slBug.oninput = function () {
-      document.querySelector('#lb-bugs').textContent = String(slBug.value);
-    };
-    slGem.oninput = function () {
-      document.querySelector('#lb-gems').textContent = String(slGem.value);
-    } ;
-
-    document.querySelector('#start').addEventListener('click', () => {
-      this.onStartClick();
-    });
-    document.querySelector('#stop').addEventListener('click', () => {
-      this.onStopClick();
-    });
-  }
-
-  enableStart(enable) {
-    const btnStop = document.querySelector('#stop');
-    const btnStart = document.querySelector('#start');
-    btnStop.disabled = enable;
-    btnStart.disabled = !enable;
-    btnStop.classList.toggle('button-inactive');
-    btnStart.classList.toggle('button-inactive');
-    document.querySelectorAll('.sl-number').forEach(
-      (elem) => {
-        elem.classList.toggle('sl-input-inactive');
-      }
-    );
-    document.querySelectorAll('.sl-input').forEach((elem) => {
-      elem.disabled = !enable;
-      elem.classList.toggle('sl-input-inactive');
-    });
-  }
-
-  getStars () {
-    return this.stars;
-  }
-
-  getGems () {
-    return this.gems;
-  }
-
-  static clearEntities (array) {
-    if (!(array instanceof Array)) {
-      return;
-    }
-    array.splice(0, array.length);
-  }
-
-  clearStones () {
-    App.clearEntities(this.stones);
-  }
-
-  getStones () {
-    return this.stones;
-  }
-
-  getEnemies () {
-    return this.allEnemies;
-  }
-
-  getPlayer () {
-    return this.player;
-  }
-
-  isStopRendering () {
-    return this.stopRendering;
-  }
-
-  onStartClick () {
-    this.status = Constants.appStatus.waitingForStart;
-    App.clearEntities(this.stars);
-    App.clearEntities(this.allEnemies);
-    this.enemyNumber = document.querySelector('.sl-input-bug').value;
-    this.gemNumber = document.querySelector('.sl-input-gem').value;
-    for (let i = 0; i < this.enemyNumber; i++) {
-      this.allEnemies.push(new Enemy(
-        App.getRandomIntInclusive(...App.getSpeedRange()), //speed
-        App.getRandomIntInclusive(1, 3))); //lane
-    }
-    this.scatterGems();
-    this.player.lane = 4;
-    this.failures = 0;
-    document.querySelector('#fail-num').textContent = String(this.failures);
-    this.enableStart(false);
-  }
-
-  onStopClick () {
-    this.status = Constants.appStatus.initial;
-    App.clearEntities(this.stones);
-    App.clearEntities(this.gems);
-    App.clearEntities(this.stars);
-    App.clearEntities(this.allEnemies);
-    this.enableStart(true);
-  }
-
-  collisionCheck (caller, lane, x) {
-    if (caller instanceof Enemy) {
-      if (lane === this.player.lane && App.getMile(x) === this.player.mile) {
-        this.status = Constants.appStatus.bang;
-        document.querySelector('#fail-num').textContent = String(++this.failures);
-        return true;
-      }
-      return false;
-    }
-    if (caller instanceof Player) {
-      if (this.status === Constants.appStatus.bang) {
-        this.status = Constants.appStatus.blinking;
-        this.player.blink();
-        return true;
-      } else {
-        return false;
-      }
-    }
-  }
-
-  gemCheck () {
-    const gemIndex = this.gems.findIndex((gem) => gem.lane === this.player.lane && gem.mile === this.player.mile);
-    if (gemIndex >= 0) {
-      this.gems.splice(gemIndex, 1);
-      if (this.gems.length === 0) {
-        this.clearStones();
-        this.status = Constants.appStatus.allClear;
-      }
-    }
-  }
-
-  scatterGems () {
-    this.gems.splice(0, this.gems.length);
-
-    const tileNumber = App.getUniqueRandoms(1, 15, this.gemNumber).values();
-
-    for (let i = 0; i < this.gemNumber; i++) {
-      this.addGem(tileNumber.next().value, this.gemPics[App.getRandomIntInclusive(0, 2)]);
-    }
-  }
-
-  throwStones () {
-    for (let i = 0; i < 5; i++) {
-      this.stones.push(new Stone(0, i, 'images/Rock.png'));
-      this.stones.push(new Stone(4, i, 'images/Rock.png'));
-    }
-  }
-
-  addGem (number, sprite) {
-    const lane = Math.ceil(number / 5);
-    const mile = number % 5 === 0 ? 4 : number % 5 - 1;
-    this.gems.push(new Gem(lane, mile, sprite));
-  }
-
-  parade () {
-    let i = 0;
-    this.status = Constants.appStatus.parading;
-    this.enableStart(true);
-    App.getUniqueRandoms(0, 4, 5).forEach((mile) => { //
-      window.setTimeout(() => { //
-        if (this.status === Constants.appStatus.parading) {
-          this.stars.push(new Star(mile));
-        }
-      }, 1000 * i++);
-    });
-  }
-
-  //do not use when the size is large
-  static getUniqueRandoms (min, max, size) {
-    const randoms = new Set();
-    //one can insert only unique values to sets; try to insert a new value until all of them are unique
-    while (randoms.size < size) {randoms.add(App.getRandomIntInclusive(min, max));}
-    return randoms;
-
-  }
-
-  static getMile (x) {
-    return Math.floor(x / Constants.tileSize.width);
-  }
-
-  static getRandomIntInclusive (min, max) {
-    //the algorithm is taken from the article on Math.random() on developer.mozilla.org
-    const rand = Math.random();
-    return Math.floor(rand * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
-  }
-
-  static getSpeedRange () {
-    return [100, 400];
-  }
-
-  static getYCoord (lane) {
-    return lane * Constants.tileSize.height - 22;
-  }
-
-  static getXCoord (mile) {
-    return mile * Constants.tileSize.width;
-  }
-
-}
-
 class Star extends Entity {
   constructor (mile) {
     super('images/Star.png', App.getXCoord(mile), 1);
@@ -369,7 +464,7 @@ class Gem extends Entity {
 
   render () {
     // noinspection Annotator
-    window.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y, 63, 106);
+    app.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y, 63, 106);
   }
 }
 

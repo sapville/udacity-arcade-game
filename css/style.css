@@ -2,6 +2,12 @@ body {
   text-align: center;
 }
 
+/* ---------------------------------------------------------------------------------- */
+
+/* Main part: controls, application, failure counter */
+
+/* ---------------------------------------------------------------------------------- */
+
 .container {
   box-sizing: border-box;
   display: flex;
@@ -17,6 +23,11 @@ body {
   box-sizing: inherit;
   padding: 0 4%;
   width: 33%;
+}
+
+/* Slider with label */
+.control {
+  margin-top: 20px;
 }
 
 .app {
@@ -36,16 +47,14 @@ body {
   font-size: 2em;
 }
 
-.control {
-  margin-top: 20px;
-}
-
+/* label above slider */
 .sl-number {
   color: #8bd46a;
   font-size: 1.5em;
   width: 100%;
 }
 
+/* slider */
 .sl-input {
   background: #8bd46a;
   border-radius: 2px;
@@ -65,13 +74,13 @@ body {
   -webkit-appearance: none;
 }
 
+.sl-input::-moz-range-thumb {
+  cursor: pointer;
+}
+
 /* noinspection CssUnusedSymbol */
 .sl-input-inactive::-webkit-slider-thumb {
   cursor: not-allowed;
-}
-
-.sl-input::-moz-range-thumb {
-  cursor: pointer;
 }
 
 /* noinspection CssUnusedSymbol */
@@ -119,19 +128,14 @@ body {
 }
 
 .button-inactive {
-  /*
-  background-color: white;
-  border: solid 2px #5fc148;
-  color: #5fc148;
-  */
   cursor: not-allowed;
   opacity: 0.5;
 }
 
 .button:hover {
-  box-shadow: 10px 10px 52px -6px rgba(0, 0, 0, 0.7);
-  -moz-box-shadow: 10px 10px 52px -6px rgba(0, 0, 0, 0.7);
-  -webkit-box-shadow: 10px 10px 52px -6px rgba(0, 0, 0, 0.7);
+  box-shadow: 5px 5px 20px 0 rgba(0, 0, 0, 0.7);
+  -moz-box-shadow: 5px 5px 20px 0 rgba(0, 0, 0, 0.7);
+  -webkit-box-shadow: 5px 5px 20px 0 rgba(0, 0, 0, 0.7);
 }
 
 .button-inactive:hover {
@@ -139,6 +143,12 @@ body {
   -moz-box-shadow: none;
   -webkit-box-shadow: none;
 }
+
+/* ---------------------------------------------------------------------------------- */
+
+/* Key-map area */
+
+/* ---------------------------------------------------------------------------------- */
 
 .key-map-row {
   color: #5fc148;
@@ -166,6 +176,12 @@ body {
   margin: 0;
   padding: 5px 0;
 }
+
+/* ---------------------------------------------------------------------------------- */
+
+/* Media-queries */
+
+/* ---------------------------------------------------------------------------------- */
 
 @media screen and (max-width: 848px) {
   .container {
