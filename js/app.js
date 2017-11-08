@@ -145,7 +145,7 @@ class App {
   }
 
   /**
-   * maintain the collision between Player end Enemy
+   * maintain the collision between Player end Enemy - the method is to be called within an update method
    * @param caller        an object checking the collision
    * @param lane          the lane where the collision took place
    * @param x             the x-coordinate where the collision took place
@@ -178,8 +178,8 @@ class App {
     const gemIndex = this.gems.findIndex((gem) => gem.lane === this.player.lane && gem.mile === this.player.mile);
     if (gemIndex >= 0) {
       this.gems.splice(gemIndex, 1); //if found, a gem is to be deleted
-      if (this.gems.length === 0) { //if no gems are left then victory!
-        this.clearStones();  //clear the way to the sea
+      if (this.gems.length === 0) { //if no gems are left then clear the way to the see
+        this.clearStones();
         this.status = Constants.appStatus.allClear;
       }
     }
@@ -282,7 +282,7 @@ class App {
   }
 
   /**
-   * get x-number of a tile by its x-coordinate in pixels
+   * get the x-number of a tile by its x-coordinate in pixels
    * @param x
    * @returns {number}
    */
@@ -290,11 +290,20 @@ class App {
     return Math.floor(x / Constants.tileSize.width);
   }
 
-  //TODO here I stopped commenting
+  /**
+   * get the y-coordinate of a tile in pixels
+   * @param lane        y-number of a tile
+   * @returns {number}  y-coordinate in pixels
+   */
   static getYCoord (lane) {
     return lane * Constants.tileSize.height - 22;
   }
 
+  /**
+   * get the x-coordinate of a tile in pixels
+   * @param mile        x-number of a tile
+   * @returns {number}  x-coordinate in pixels
+   */
   static getXCoord (mile) {
     return mile * Constants.tileSize.width;
   }
@@ -317,7 +326,6 @@ class Entity {
   }
 
   render () {
-    // noinspection Annotator
     app.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y);
   }
 }
@@ -332,7 +340,7 @@ class Enemy extends Entity {
    */
   constructor (speed, lane) {
     super('images/enemy-bug.png', 1, App.getYCoord(lane));
-    this.lane = lane;
+    this.lane = lane;   //the row a bug assigned to
     this.speed = speed;
     this.width = 50;
   }
@@ -348,8 +356,8 @@ class Enemy extends Entity {
     }
     this.x = this.x + this.speed * dt;
     if (this.x === 0 || this.x > Constants.canvasSize.width) {
-      this.speed = App.getRandomIntInclusive(...App.getSpeedRange()); //speed
-      this.lane = App.getRandomIntInclusive(1, 3); //lane
+      this.speed = App.getRandomIntInclusive(...App.getSpeedRange());
+      this.lane = App.getRandomIntInclusive(1, 3);
       this.x = 1;
       this.y = App.getYCoord(this.lane);
     }
@@ -357,37 +365,47 @@ class Enemy extends Entity {
   }
 }
 
+/**
+ * A character to play with
+ */
 class Player extends Entity {
+  /**
+   * @param mile  initial mile
+   */
   constructor (mile) {
     super('images/char-cat-girl.png', App.getXCoord(mile), App.getYCoord(4));
     this.sprite = 'images/char-cat-girl.png';
-    this.lane = 4;
-    this.mile = mile;
-    this.hide = false;
+    this.lane = 4;        //the row number where the player is situated
+    this.mile = mile;     //the column number where the player is situated
+    this.hide = false;    //used for blinking after collision with an enemy
   }
 
   // noinspection JSUnusedGlobalSymbols
+  /**
+   * see the comment to Enemy->update method (except for dt parameter - there is no need for it since the player doesn't have the speed of its own)
+   */
   update () {
     if (app.status === Constants.appStatus.parading || app.status === Constants.appStatus.blinking) {
       return;
     }
     this.x = App.getXCoord(this.mile);
-    this.y = App.getYCoord(this.lane) + 11;
+    this.y = App.getYCoord(this.lane) + 11; //make an adjustment for the height of the player's body
 
+    // noinspection JSCheckFunctionSignatures
     if (app.collisionCheck(this)) {
       return;
     }
     switch (app.status) {
       case Constants.appStatus.allClear:
-        if (this.lane === 0) {
+        if (this.lane === 0) { //the player reached to the last lane; hence victory;
           app.parade();
         }
         break;
       case Constants.appStatus.gameInProgress:
-        app.gemCheck();
+        app.gemCheck();  //if the player found a gem?
         break;
       case Constants.appStatus.waitingForStart:
-        if (this.lane === 3) {
+        if (this.lane === 3) { //the player is out for a game (left the green field)
           app.status = Constants.appStatus.gameInProgress;
           app.throwStones();
         }
@@ -396,11 +414,14 @@ class Player extends Entity {
     }
   }
 
+  /**
+   * after the collision with an enemy the player should be blinking for a while and then start from the beginning
+   */
   blink () {
     const interval = window.setInterval(() => {
-      this.hide = !this.hide;
+      this.hide = !this.hide; //blink every 0.1 second
     }, 100);
-    window.setTimeout(() => {
+    window.setTimeout(() => { //after a second of blinking the player returns to the start point
       this.hide = false;
       app.status = Constants.appStatus.waitingForStart;
       app.scatterGems();
@@ -410,22 +431,29 @@ class Player extends Entity {
     }, 1000);
   }
 
+  /**
+   * to implement blinking the Entity's render method should be redefined
+   */
   render () {
     if (!(app.status === Constants.appStatus.blinking && this.hide)) {
       super.render();
     }
   }
 
+  /**
+   * control the player
+   * @param keyPressed    the code passed from the 'keyup' event handler
+   */
   handleInput (keyPressed) {
     switch (keyPressed) {
       case 'left':
-        this.mile = this.mile === 0 ? 0 : this.mile - 1;
+        this.mile = this.mile === 0 ? 0 : this.mile - 1; //if the player reached the edge it cannot move further
         break;
       case 'right':
         this.mile = this.mile === 4 ? 4 : this.mile + 1;
         break;
       case 'up':
-        if (app.status === Constants.appStatus.gameInProgress && this.lane === 1) {
+        if (app.status === Constants.appStatus.gameInProgress && this.lane === 1) { //the last lane is fenced with the wall during the game
           break;
         }
         this.lane = this.lane === 0 ? 0 : this.lane - 1;
@@ -440,7 +468,13 @@ class Player extends Entity {
   }
 }
 
+/**
+ * stars falling during the parade after victory
+ */
 class Star extends Entity {
+  /**
+   * @param mile  the column the star is assigned to
+   */
   constructor (mile) {
     super('images/Star.png', App.getXCoord(mile), 1);
     this.speed = 90;
@@ -449,12 +483,15 @@ class Star extends Entity {
   // noinspection JSUnusedGlobalSymbols
   update (dt) {
     this.y = this.y + this.speed * dt;
-    if (this.y > Constants.canvasSize.height - 170) {
+    if (this.y > Constants.canvasSize.height - 170) { //stars shouldn't fall all the way to the end
       this.y = 1;
     }
   }
 }
 
+/**
+ * gems to be collected by the player
+ */
 class Gem extends Entity {
   constructor (lane, mile, sprite) {
     super(sprite, App.getXCoord(mile) + 20, App.getYCoord(lane) + 42);
@@ -462,24 +499,27 @@ class Gem extends Entity {
     this.mile = mile;
   }
 
+  /**
+   * redefine the Entity's method to make gems smaller
+   */
   render () {
-    // noinspection Annotator
     app.ctx.drawImage(window.Resources.get(this.sprite), this.x, this.y, 63, 106);
   }
 }
 
+/**
+ * stones to build a wall from
+ */
 class Stone extends Entity {
   constructor (lane, mile, sprite) {
-    super(sprite, App.getXCoord(mile), App.getYCoord(lane) + 6);
+    super(sprite, App.getXCoord(mile), App.getYCoord(lane) + 6); //shift stones lower
   }
 }
 
 const app = new App();
 
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function (e) {
-  const allowedKeys = { // jshint ignore:line
+  const allowedKeys = {
     37: 'left',
     38: 'up',
     39: 'right',
