@@ -3,3 +3,4 @@ lupaProject.json
 .idea/*
 node_modules/*
 .stylelintrc
+package-lock.json
